@@ -1,4 +1,4 @@
-package com.careconnect.model;
+﻿package com.careconnect.model;
 
 import com.careconnect.model.enums.EstadoUsuario;
 import jakarta.persistence.*;
@@ -55,7 +55,7 @@ public abstract class Usuario extends BaseAuditableEntity implements UserDetails
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserRol> roles = new ArrayList<>();
 
-    // ================= MÉTODOS DE USERDETAILS =================
+    // ================= METODOS DE USERDETAILS =================
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -91,9 +91,9 @@ public abstract class Usuario extends BaseAuditableEntity implements UserDetails
 
     @Override
     public boolean isEnabled() {
-        // Habilita el acceso solo si está activo, no fue borrado y confirmó su email
+        // Habilita el acceso si esta activo o pendiente_verificacion, no fue borrado y confirmo su email
         return this.deletedAt == null 
-                && this.estadoUser == EstadoUsuario.ACTIVO 
+                && (this.estadoUser == EstadoUsuario.ACTIVO || this.estadoUser == EstadoUsuario.PENDIENTE_VERIFICACION) 
                 && this.emailVerificado;
     }
 }

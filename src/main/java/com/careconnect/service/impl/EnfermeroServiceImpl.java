@@ -1,8 +1,9 @@
-package com.careconnect.service.impl;
+﻿package com.careconnect.service.impl;
 
 import com.careconnect.dto.enfermero.EnfermeroBusquedaRequestDTO;
 import com.careconnect.dto.enfermero.EnfermeroPerfilResponseDTO;
 import com.careconnect.dto.enfermero.EnfermeroPerfilUpdateDTO;
+import com.careconnect.exception.ResourceNotFoundException;
 import com.careconnect.model.Enfermero;
 import com.careconnect.repository.EnfermeroRepository;
 import com.careconnect.service.EnfermeroService;
@@ -66,7 +67,7 @@ public class EnfermeroServiceImpl implements EnfermeroService {
 
     private Enfermero buscarEnfermeroOFallar(Long id) {
         return enfermeroRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Enfermero no encontrado con id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Enfermero no encontrado con id: " + id));
     }
 
     private EnfermeroPerfilResponseDTO toResponseDTO(Enfermero e) {

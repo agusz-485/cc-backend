@@ -1,4 +1,4 @@
-package com.careconnect.config;
+﻿package com.careconnect.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -32,12 +32,16 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                // 1. La regla específica de /me exige autenticación con JWT:
+                // 1. La regla especifica de /me exige autenticacion con JWT:
                 .requestMatchers("/api/v1/auth/me").authenticated()
-                // 2. Registro y Login quedan públicos:
+                // 2. Registro y Login quedan publicos:
                 .requestMatchers("/api/v1/auth/**").permitAll()
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                // 3. Permite lectura publica de perfiles y busqueda en directorio
+                .requestMatchers(HttpMethod.GET, "/api/v1/cuidadores/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/enfermeros/**").permitAll()
                 .requestMatchers("/api/v1/enfermeros/**").hasAnyRole("ENFERMERO", "ADMIN")
+                .requestMatchers("/api/v1/cuidadores/**").hasAnyRole("CUIDADOR", "ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/v1/servicios/**").authenticated()
                 .anyRequest().authenticated()
             )
@@ -49,7 +53,6 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        // Permite los puertos locales habituales de Vite/React
         config.setAllowedOriginPatterns(List.of("http://localhost:*", "http://127.0.0.1:*"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"));

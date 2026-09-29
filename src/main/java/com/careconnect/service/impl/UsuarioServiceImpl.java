@@ -1,4 +1,4 @@
-package com.careconnect.service.impl;
+﻿package com.careconnect.service.impl;
 
 import com.careconnect.dto.auth.AuthResponseDTO;
 import com.careconnect.dto.auth.LoginRequestDTO;
@@ -44,23 +44,40 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         // 2. Bloqueo de escalada de privilegios
         if ("ADMIN".equals(rol) || "ADMINISTRADOR".equals(rol)) {
-            throw new RuntimeException("No está permitido registrarse con rol de Administrador");
+            throw new RuntimeException("No esta permitido registrarse con rol de Administrador");
         }
 
-        // 3. Creación exclusiva de entidades permitidas
+        // 3. Creacion de entidades permitidas
         Usuario usuario;
         switch (rol) {
-            case "CUIDADOR" -> usuario = new Cuidador();
+            case "CUIDADOR" -> {
+                Cuidador cuidador = new Cuidador();
+                if (dto.getZonaPrincipal() != null && !dto.getZonaPrincipal().isBlank()) {
+                    cuidador.setZonaPrincipal(dto.getZonaPrincipal());
+                }
+                if (dto.getPrecioHora() != null) {
+                    cuidador.setPrecioHora(dto.getPrecioHora());
+                }
+                cuidador.setDisponible(true);
+                usuario = cuidador;
+            }
             case "ENFERMERO" -> {
                 Enfermero enfermero = new Enfermero();
                 String matricula = (dto.getMatriculaProfesional() != null && !dto.getMatriculaProfesional().isBlank())
                         ? dto.getMatriculaProfesional()
                         : "MAT-PENDIENTE";
                 enfermero.setMatriculaProfesional(matricula);
+                if (dto.getZonaPrincipal() != null && !dto.getZonaPrincipal().isBlank()) {
+                    enfermero.setZonaPrincipal(dto.getZonaPrincipal());
+                }
+                if (dto.getPrecioHora() != null) {
+                    enfermero.setPrecioHora(dto.getPrecioHora());
+                }
+                enfermero.setVisible(true);
                 usuario = enfermero;
             }
             case "FAMILIAR" -> usuario = new Familiar();
-            default -> throw new RuntimeException("Rol no válido: " + rol);
+            default -> throw new RuntimeException("Rol no valido: " + rol);
         }
 
         usuario.setNombre(dto.getNombre());
@@ -94,10 +111,10 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public AuthResponseDTO login(LoginRequestDTO dto) {
         Usuario usuario = usuarioRepository.findByEmail(dto.getEmail())
-                .orElseThrow(() -> new RuntimeException("Credenciales inválidas"));
+                .orElseThrow(() -> new RuntimeException("Credenciales invalidas"));
 
         if (!passwordEncoder.matches(dto.getPassword(), usuario.getPasswordHash())) {
-            throw new RuntimeException("Credenciales inválidas");
+            throw new RuntimeException("Credenciales invalidas");
         }
 
         // Bloqueo a cuentas suspendidas
