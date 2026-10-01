@@ -26,34 +26,46 @@ public class UploadController {
             "jpg", "jpeg", "png", "webp", "gif", "pdf", "svg"
     );
 
+    private Path resolveStorageDir(String safeFolder) throws IOException {
+        Path targetDir = Paths.get(uploadBaseDir, safeFolder).toAbsolutePath().normalize();
+        try {
+            if (!Files.exists(targetDir)) {
+                Files.createDirectories(targetDir);
+            }
+            return targetDir;
+        } catch (Exception e) {
+            // Fallback a directorio temporal del sistema en caso de permisos restringidos
+            Path tmpDir = Paths.get(System.getProperty("java.io.tmpdir"), "careconnect_uploads", safeFolder).toAbsolutePath().normalize();
+            if (!Files.exists(tmpDir)) {
+                Files.createDirectories(tmpDir);
+            }
+            return tmpDir;
+        }
+    }
+
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> uploadFile(
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "folder", defaultValue = "general") String folder) {
 
         if (file.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("error", "El archivo no puede estar vacío"));
+            return ResponseEntity.badRequest().body(Map.of("error", "El archivo no puede estar vacio"));
         }
 
         String originalFilename = file.getOriginalFilename();
         String extension = StringUtils.getFilenameExtension(originalFilename);
 
         if (extension == null || !ALLOWED_EXTENSIONS.contains(extension.toLowerCase())) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Formato de archivo no permitido. Formatos válidos: JPG, PNG, WEBP, GIF, PDF"));
+            return ResponseEntity.badRequest().body(Map.of("error", "Formato no permitido. Formatos validos: JPG, PNG, WEBP, GIF, PDF"));
         }
 
-        // Sanitizar el nombre de carpeta
         String safeFolder = folder.replaceAll("[^a-zA-Z0-9_-]", "");
         if (safeFolder.isBlank()) {
             safeFolder = "general";
         }
 
         try {
-            Path targetDir = Paths.get(uploadBaseDir, safeFolder).toAbsolutePath().normalize();
-            if (!Files.exists(targetDir)) {
-                Files.createDirectories(targetDir);
-            }
-
+            Path targetDir = resolveStorageDir(safeFolder);
             String uniqueName = UUID.randomUUID().toString() + "." + extension.toLowerCase();
             Path targetFile = targetDir.resolve(uniqueName);
 
@@ -64,7 +76,7 @@ public class UploadController {
             return ResponseEntity.ok(Map.of(
                     "url", publicUrl,
                     "fileName", uniqueName,
-                    "originalName", originalFilename,
+                    "originalName", originalFilename != null ? originalFilename : uniqueName,
                     "size", file.getSize(),
                     "contentType", file.getContentType() != null ? file.getContentType() : "application/octet-stream"
             ));
@@ -84,6 +96,12 @@ public class UploadController {
         try {
             Path filePath = Paths.get(uploadBaseDir, safeFolder, safeFileName).toAbsolutePath().normalize();
             Resource resource = new UrlResource(filePath.toUri());
+
+            if (!resource.exists() || !resource.isReadable()) {
+                // Probar en directorio temporal de fallback
+                Path tmpPath = Paths.get(System.getProperty("java.io.tmpdir"), "careconnect_uploads", safeFolder, safeFileName).toAbsolutePath().normalize();
+                resource = new UrlResource(tmpPath.toUri());
+            }
 
             if (!resource.exists() || !resource.isReadable()) {
                 return ResponseEntity.notFound().build();

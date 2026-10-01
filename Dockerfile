@@ -15,11 +15,14 @@ RUN ./mvnw clean package -DskipTests
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-# Usuario sin privilegios por seguridad
-RUN addgroup -S spring && adduser -S spring -G spring
+# Crear directorio de uploads y dar permisos completos al usuario spring
+RUN addgroup -S spring && adduser -S spring -G spring && \
+    mkdir -p /app/uploads && \
+    chown -R spring:spring /app
+
 USER spring:spring
 
-COPY --from=builder /app/target/*.jar app.jar
+COPY --from=builder --chown=spring:spring /app/target/*.jar app.jar
 
 EXPOSE 8080
 
