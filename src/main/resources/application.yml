@@ -3,13 +3,13 @@ server:
 
 spring:
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://gateway01.sa-east-1.prod.aws.tidbcloud.com:4000/careconnect_db?createDatabaseIfNotExist=true&useSSL=true&allowPublicKeyRetrieval=true&serverTimezone=UTC&connectTimeout=15000&socketTimeout=30000}
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://gateway01.sa-east-1.prod.aws.tidbcloud.com:4000/careconnect_db?createDatabaseIfNotExist=true&useSSL=true&allowPublicKeyRetrieval=true&serverTimezone=UTC&connectTimeout=10000&socketTimeout=20000}
     username: ${SPRING_DATASOURCE_USERNAME:3YDGxn2omTNAqoP.root}
     password: ${SPRING_DATASOURCE_PASSWORD:gsyZb6R05TLUDvBU}
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
-      connection-timeout: 30000
-      maximum-pool-size: 5
+      connection-timeout: 20000
+      maximum-pool-size: 3
       minimum-idle: 1
       idle-timeout: 300000
       max-lifetime: 900000
@@ -21,12 +21,10 @@ spring:
       max-request-size: 15MB
 
   jpa:
+    open-in-view: false
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
     show-sql: false
-    properties:
-      hibernate:
-        format_sql: false
 
   flyway:
     enabled: true

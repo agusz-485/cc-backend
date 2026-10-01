@@ -24,4 +24,7 @@ USER spring:spring
 
 COPY --from=builder --chown=spring:spring /app/target/*.jar app.jar
 
-ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar"]
+ENV PORT=8080
+EXPOSE 8080
+
+ENTRYPOINT ["java", "-XX:+TieredCompilation", "-XX:TieredStopAtLevel=1", "-Xmx380m", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar"]
