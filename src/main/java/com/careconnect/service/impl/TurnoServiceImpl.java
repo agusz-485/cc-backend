@@ -140,10 +140,17 @@ public class TurnoServiceImpl implements TurnoService {
         String familiarNombre = (turno.getFamiliar() != null) 
                 ? (turno.getFamiliar().getNombre() + " " + turno.getFamiliar().getApellido()).trim()
                 : "Familiar";
+        String familiarFoto = (turno.getFamiliar() != null) ? turno.getFamiliar().getFotoPerfil() : null;
+        String familiarTelefono = (turno.getFamiliar() != null) ? turno.getFamiliar().getTelefono() : null;
+        String direccion = (turno.getFamiliar() != null && turno.getFamiliar().getZona() != null)
+                ? turno.getFamiliar().getZona()
+                : null;
 
         String cuidadorNombre = (turno.getCuidador() != null)
                 ? (turno.getCuidador().getNombre() + " " + turno.getCuidador().getApellido()).trim()
                 : "Cuidador";
+        String cuidadorFoto = (turno.getCuidador() != null) ? turno.getCuidador().getFotoPerfil() : null;
+        String cuidadorTelefono = (turno.getCuidador() != null) ? turno.getCuidador().getTelefono() : null;
 
         String adultoMayorNombre = (turno.getAdultoMayor() != null)
                 ? (turno.getAdultoMayor().getNombre() + " " + turno.getAdultoMayor().getApellido()).trim()
@@ -157,8 +164,13 @@ public class TurnoServiceImpl implements TurnoService {
                 .id(turno.getId())
                 .familiarId(turno.getFamiliar() != null ? turno.getFamiliar().getId() : null)
                 .familiarNombre(familiarNombre)
+                .familiarFoto(familiarFoto)
+                .familiarTelefono(familiarTelefono)
+                .direccion(direccion)
                 .cuidadorId(turno.getCuidador() != null ? turno.getCuidador().getId() : null)
                 .cuidadorNombre(cuidadorNombre)
+                .cuidadorFoto(cuidadorFoto)
+                .cuidadorTelefono(cuidadorTelefono)
                 .adultoMayorId(turno.getAdultoMayor() != null ? turno.getAdultoMayor().getId() : null)
                 .adultoMayorNombre(adultoMayorNombre)
                 .fecha(turno.getFecha())

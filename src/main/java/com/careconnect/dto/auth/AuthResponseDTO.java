@@ -11,9 +11,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AuthResponseDTO {
 
-    private String token; // Para cuando agreguen JWT (o un mensaje/status por ahora)
+    private String token;
     private Long id;
     private String nombre;
+    private String apellido;
     private String email;
+    private String telefono;
+    private String fotoPerfil;
     private String rol;
 }

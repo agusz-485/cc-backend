@@ -1,4 +1,4 @@
-﻿package com.careconnect.model;
+package com.careconnect.model;
 
 import com.careconnect.model.enums.EstadoUsuario;
 import jakarta.persistence.*;

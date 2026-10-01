@@ -57,6 +57,18 @@ public class CuidadorServiceImpl implements CuidadorService {
     public CuidadorPerfilResponseDTO actualizarPerfil(Long id, CuidadorPerfilUpdateDTO dto) {
         Cuidador cuidador = buscarCuidadorOFallar(id);
 
+        if (dto.getFotoPerfil() != null) {
+            cuidador.setFotoPerfil(dto.getFotoPerfil());
+        }
+        if (dto.getNombre() != null && !dto.getNombre().isBlank()) {
+            cuidador.setNombre(dto.getNombre());
+        }
+        if (dto.getApellido() != null && !dto.getApellido().isBlank()) {
+            cuidador.setApellido(dto.getApellido());
+        }
+        if (dto.getTelefono() != null) {
+            cuidador.setTelefono(dto.getTelefono());
+        }
         if (dto.getDescripcion() != null) {
             cuidador.setDescripcion(dto.getDescripcion());
         }
@@ -118,5 +130,4 @@ public class CuidadorServiceImpl implements CuidadorService {
                         .collect(Collectors.toList()))
                 .build();
     }
-    
 }

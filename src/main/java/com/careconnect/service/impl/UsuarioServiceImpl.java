@@ -1,8 +1,9 @@
-﻿package com.careconnect.service.impl;
+package com.careconnect.service.impl;
 
 import com.careconnect.dto.auth.AuthResponseDTO;
 import com.careconnect.dto.auth.LoginRequestDTO;
 import com.careconnect.dto.auth.RegistroUsuarioDTO;
+import com.careconnect.exception.ResourceNotFoundException;
 import com.careconnect.model.*;
 import com.careconnect.model.enums.EstadoUsuario;
 import com.careconnect.repository.UsuarioRepository;
@@ -12,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Map;
 
 @Service
 public class UsuarioServiceImpl implements UsuarioService {
@@ -37,17 +40,14 @@ public class UsuarioServiceImpl implements UsuarioService {
             throw new RuntimeException("El email ya se encuentra registrado");
         }
 
-        // 1. Normalizar el rol
         String rol = (dto.getRol() != null && !dto.getRol().isBlank()) 
                 ? dto.getRol().trim().toUpperCase() 
                 : "FAMILIAR";
 
-        // 2. Bloqueo de escalada de privilegios
         if ("ADMIN".equals(rol) || "ADMINISTRADOR".equals(rol)) {
             throw new RuntimeException("No esta permitido registrarse con rol de Administrador");
         }
 
-        // 3. Creacion de entidades permitidas
         Usuario usuario;
         switch (rol) {
             case "CUIDADOR" -> {
@@ -87,7 +87,6 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuario.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
         usuario.setRol(rol);
 
-        // 4. REGLA DE NEGOCIO: Cuidadores/Enfermeros nacen en PENDIENTE_VERIFICACION
         if ("CUIDADOR".equals(rol) || "ENFERMERO".equals(rol)) {
             usuario.setEstadoUser(EstadoUsuario.PENDIENTE_VERIFICACION);
         } else {
@@ -102,7 +101,10 @@ public class UsuarioServiceImpl implements UsuarioService {
         return AuthResponseDTO.builder()
                 .id(usuarioGuardado.getId())
                 .nombre(usuarioGuardado.getNombre())
+                .apellido(usuarioGuardado.getApellido())
                 .email(usuarioGuardado.getEmail())
+                .telefono(usuarioGuardado.getTelefono())
+                .fotoPerfil(usuarioGuardado.getFotoPerfil())
                 .rol(usuarioGuardado.getRol())
                 .token(token)
                 .build();
@@ -117,7 +119,6 @@ public class UsuarioServiceImpl implements UsuarioService {
             throw new RuntimeException("Credenciales invalidas");
         }
 
-        // Bloqueo a cuentas suspendidas
         if (usuario.getEstadoUser() == EstadoUsuario.SUSPENDIDO) {
             throw new RuntimeException("Tu cuenta se encuentra suspendida. Contacta a soporte.");
         }
@@ -127,7 +128,10 @@ public class UsuarioServiceImpl implements UsuarioService {
         return AuthResponseDTO.builder()
                 .id(usuario.getId())
                 .nombre(usuario.getNombre())
+                .apellido(usuario.getApellido())
                 .email(usuario.getEmail())
+                .telefono(usuario.getTelefono())
+                .fotoPerfil(usuario.getFotoPerfil())
                 .rol(usuario.getRol())
                 .token(token)
                 .build();
@@ -136,13 +140,51 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public AuthResponseDTO obtenerPerfilPorEmail(String email) {
         Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con email: " + email));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con email: " + email));
 
         return AuthResponseDTO.builder()
                 .id(usuario.getId())
                 .nombre(usuario.getNombre())
+                .apellido(usuario.getApellido())
                 .email(usuario.getEmail())
+                .telefono(usuario.getTelefono())
+                .fotoPerfil(usuario.getFotoPerfil())
                 .rol(usuario.getRol())
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public AuthResponseDTO actualizarPerfilPorEmail(String email, Map<String, Object> body) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con email: " + email));
+
+        if (body.containsKey("fotoPerfil") && body.get("fotoPerfil") != null) {
+            usuario.setFotoPerfil(String.valueOf(body.get("fotoPerfil")));
+        } else if (body.containsKey("fotoUrl") && body.get("fotoUrl") != null) {
+            usuario.setFotoPerfil(String.valueOf(body.get("fotoUrl")));
+        }
+
+        if (body.containsKey("nombre") && body.get("nombre") != null && !String.valueOf(body.get("nombre")).isBlank()) {
+            usuario.setNombre(String.valueOf(body.get("nombre")));
+        }
+        if (body.containsKey("apellido") && body.get("apellido") != null && !String.valueOf(body.get("apellido")).isBlank()) {
+            usuario.setApellido(String.valueOf(body.get("apellido")));
+        }
+        if (body.containsKey("telefono") && body.get("telefono") != null) {
+            usuario.setTelefono(String.valueOf(body.get("telefono")));
+        }
+
+        Usuario guardado = usuarioRepository.save(usuario);
+
+        return AuthResponseDTO.builder()
+                .id(guardado.getId())
+                .nombre(guardado.getNombre())
+                .apellido(guardado.getApellido())
+                .email(guardado.getEmail())
+                .telefono(guardado.getTelefono())
+                .fotoPerfil(guardado.getFotoPerfil())
+                .rol(guardado.getRol())
                 .build();
     }
 
@@ -150,7 +192,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Transactional
     public void cambiarEstado(Long id, EstadoUsuario nuevoEstado) {
         Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + id));
         usuario.setEstadoUser(nuevoEstado);
         usuarioRepository.save(usuario);
     }

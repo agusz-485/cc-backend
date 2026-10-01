@@ -1,4 +1,4 @@
-﻿package com.careconnect.service.impl;
+package com.careconnect.service.impl;
 
 import com.careconnect.dto.enfermero.EnfermeroBusquedaRequestDTO;
 import com.careconnect.dto.enfermero.EnfermeroPerfilResponseDTO;
@@ -46,6 +46,21 @@ public class EnfermeroServiceImpl implements EnfermeroService {
     public EnfermeroPerfilResponseDTO actualizarPerfil(Long id, EnfermeroPerfilUpdateDTO dto) {
         Enfermero enfermero = buscarEnfermeroOFallar(id);
 
+        if (dto.getFotoPerfil() != null) {
+            enfermero.setFotoPerfil(dto.getFotoPerfil());
+        }
+        if (dto.getNombre() != null && !dto.getNombre().isBlank()) {
+            enfermero.setNombre(dto.getNombre());
+        }
+        if (dto.getApellido() != null && !dto.getApellido().isBlank()) {
+            enfermero.setApellido(dto.getApellido());
+        }
+        if (dto.getTelefono() != null) {
+            enfermero.setTelefono(dto.getTelefono());
+        }
+        if (dto.getMatriculaProfesional() != null) {
+            enfermero.setMatriculaProfesional(dto.getMatriculaProfesional());
+        }
         if (dto.getDescripcion() != null) {
             enfermero.setDescripcion(dto.getDescripcion());
         }

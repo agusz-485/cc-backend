@@ -20,8 +20,15 @@ public class TurnoResponseDTO {
     private Long id;
     private Long familiarId;
     private String familiarNombre;
+    private String familiarFoto;
+    private String familiarTelefono;
+    private String direccion;
+
     private Long cuidadorId;
     private String cuidadorNombre;
+    private String cuidadorFoto;
+    private String cuidadorTelefono;
+
     private Long adultoMayorId;
     private String adultoMayorNombre;
 

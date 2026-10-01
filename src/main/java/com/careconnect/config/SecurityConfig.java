@@ -1,5 +1,6 @@
-﻿package com.careconnect.config;
+package com.careconnect.config;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,18 +31,34 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .exceptionHandling(exceptions -> exceptions
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"status\":401,\"error\":\"No autorizado\",\"message\":\"Debes iniciar sesión con una cuenta de Familiar para realizar una reserva.\"}");
+                })
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"status\":403,\"error\":\"Acceso denegado\",\"message\":\"No tienes permisos para realizar esta acción con tu rol actual.\"}");
+                })
+            )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                // 1. La regla especifica de /me exige autenticacion con JWT:
+                // 1. Archivos estaticos y subidas publicas
+                .requestMatchers("/api/v1/uploads", "/api/v1/uploads/**").permitAll()
+                // 2. La regla especifica de /me exige autenticacion con JWT:
                 .requestMatchers("/api/v1/auth/me").authenticated()
-                // 2. Registro y Login quedan publicos:
+                // 3. Registro y Login quedan publicos:
                 .requestMatchers("/api/v1/auth/**").permitAll()
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                // 3. Permite lectura publica de perfiles y busqueda en directorio
+                // 4. Permite lectura publica de perfiles y busqueda en directorio
                 .requestMatchers(HttpMethod.GET, "/api/v1/cuidadores/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/enfermeros/**").permitAll()
                 .requestMatchers("/api/v1/enfermeros/**").hasAnyRole("ENFERMERO", "ADMIN")
                 .requestMatchers("/api/v1/cuidadores/**").hasAnyRole("CUIDADOR", "ADMIN")
+                .requestMatchers("/api/v1/turnos/**").authenticated()
+                .requestMatchers("/api/v1/adultos-mayores/**").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/v1/servicios/**").authenticated()
                 .anyRequest().authenticated()
             )

@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1/auth")
 @CrossOrigin(origins = "*")
@@ -41,6 +43,28 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         AuthResponseDTO response = usuarioService.obtenerPerfilPorEmail(authentication.getName());
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<AuthResponseDTO> actualizarPerfil(
+            Authentication authentication,
+            @RequestBody Map<String, Object> body) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        AuthResponseDTO response = usuarioService.actualizarPerfilPorEmail(authentication.getName(), body);
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/me")
+    public ResponseEntity<AuthResponseDTO> parchearPerfil(
+            Authentication authentication,
+            @RequestBody Map<String, Object> body) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        AuthResponseDTO response = usuarioService.actualizarPerfilPorEmail(authentication.getName(), body);
         return ResponseEntity.ok(response);
     }
 }

@@ -14,10 +14,16 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class EnfermeroPerfilUpdateDTO {
 
-    @Size(max = 2000, message = "La descripción no puede superar los 2000 caracteres")
+    private String nombre;
+    private String apellido;
+    private String telefono;
+    private String fotoPerfil;
+    private String matriculaProfesional;
+
+    @Size(max = 4000, message = "La descripcion no puede superar los 4000 caracteres")
     private String descripcion;
 
-    @Min(value = 0, message = "Los años de experiencia no pueden ser negativos")
+    @Min(value = 0, message = "Los anios de experiencia no pueden ser negativos")
     private Integer aniosExperiencia;
 
     private String zonaPrincipal;
