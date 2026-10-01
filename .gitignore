@@ -15,3 +15,5 @@ build/
 # Configuración local de entorno y logs
 .env
 *.log
+uploads/
+
