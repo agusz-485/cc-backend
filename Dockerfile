@@ -1,13 +1,13 @@
-# Etapa 1: Compilación con Temurin JDK 21
+# Etapa 1: Compilacion con Temurin JDK 21
 FROM eclipse-temurin:21-jdk-alpine AS builder
 WORKDIR /app
 
-# Cachear dependencias de Maven
+# Copiar configuracion de Maven y dar permisos de ejecucion
 COPY .mvn/ .mvn/
 COPY mvnw pom.xml ./
-RUN ./mvnw dependency:go-offline -B
+RUN chmod +x mvnw && ./mvnw dependency:go-offline -B
 
-# Compilar empaquetado omitiendo tests unitarios
+# Compilar empaquetado omitiendo tests
 COPY src/ ./src/
 RUN ./mvnw clean package -DskipTests
 
