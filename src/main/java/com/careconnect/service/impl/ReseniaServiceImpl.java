@@ -42,7 +42,6 @@ public class ReseniaServiceImpl implements ReseniaService {
             autor = usuarioRepository.findByEmail(email).orElse(null);
         }
         if (autor == null) {
-            // Por defecto asociar con el familiar del turno si no viene identificado
             autor = turno.getFamiliar();
         }
         if (autor == null) {
@@ -51,6 +50,11 @@ public class ReseniaServiceImpl implements ReseniaService {
 
         if (dto.getPuntuacion() == null || dto.getPuntuacion() < 1 || dto.getPuntuacion() > 5) {
             throw new IllegalArgumentException("La puntuación debe ser un número entero entre 1 y 5 estrellas");
+        }
+
+        Usuario targetCuidador = turno.getCuidador();
+        if (targetCuidador == null && turno.getCuidador() != null) {
+            targetCuidador = usuarioRepository.findById(turno.getCuidador().getId()).orElse(null);
         }
 
         Optional<Resenia> existente = reseniaRepository.findByTurnoIdAndAutorId(turno.getId(), autor.getId());
@@ -67,7 +71,7 @@ public class ReseniaServiceImpl implements ReseniaService {
             resenia = Resenia.builder()
                     .turno(turno)
                     .autor(autor)
-                    .cuidador(turno.getCuidador())
+                    .cuidador(targetCuidador)
                     .puntuacion(dto.getPuntuacion())
                     .comentario(comentarioLimpio)
                     .visible(true)

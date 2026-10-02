@@ -22,7 +22,7 @@ public class Resenia extends BaseAuditableEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cuidador_id", nullable = false)
-    private Cuidador cuidador;
+    private Usuario cuidador;
 
     @Column(nullable = false)
     private Integer puntuacion;
