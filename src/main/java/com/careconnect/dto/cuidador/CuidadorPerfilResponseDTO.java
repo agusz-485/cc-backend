@@ -25,6 +25,9 @@ public class CuidadorPerfilResponseDTO {
     private String zonaPrincipal;
     private BigDecimal precioHora;
     private boolean disponible;
+    private Double calificacionPromedio;
+    private Long totalResenas;
+    private Long totalResenias;
     private List<String> especialidades;
     private List<String> zonasCobertura;
 }

@@ -6,6 +6,7 @@ import com.careconnect.dto.enfermero.EnfermeroPerfilUpdateDTO;
 import com.careconnect.exception.ResourceNotFoundException;
 import com.careconnect.model.Enfermero;
 import com.careconnect.repository.EnfermeroRepository;
+import com.careconnect.repository.ReseniaRepository;
 import com.careconnect.service.EnfermeroService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,9 +18,12 @@ import java.util.stream.Collectors;
 public class EnfermeroServiceImpl implements EnfermeroService {
 
     private final EnfermeroRepository enfermeroRepository;
+    private final ReseniaRepository reseniaRepository;
 
-    public EnfermeroServiceImpl(EnfermeroRepository enfermeroRepository) {
+    public EnfermeroServiceImpl(EnfermeroRepository enfermeroRepository,
+                                ReseniaRepository reseniaRepository) {
         this.enfermeroRepository = enfermeroRepository;
+        this.reseniaRepository = reseniaRepository;
     }
 
     @Override
@@ -86,6 +90,11 @@ public class EnfermeroServiceImpl implements EnfermeroService {
     }
 
     private EnfermeroPerfilResponseDTO toResponseDTO(Enfermero e) {
+        Double promedio = reseniaRepository.calcularPromedioCuidador(e.getId());
+        Long total = reseniaRepository.contarReseniasCuidador(e.getId());
+        double califPromedio = (promedio != null && total != null && total > 0) ? Math.round(promedio * 10.0) / 10.0 : 5.0;
+        long totalCount = total != null ? total : 0L;
+
         return EnfermeroPerfilResponseDTO.builder()
                 .id(e.getId())
                 .nombre(e.getNombre())
@@ -99,6 +108,9 @@ public class EnfermeroServiceImpl implements EnfermeroService {
                 .zonaPrincipal(e.getZonaPrincipal())
                 .precioHora(e.getPrecioHora())
                 .visible(e.isVisible())
+                .calificacionPromedio(califPromedio)
+                .totalResenas(totalCount)
+                .totalResenias(totalCount)
                 .build();
     }
 }

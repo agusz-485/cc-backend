@@ -8,6 +8,7 @@ import com.careconnect.model.Especialidad;
 import com.careconnect.model.Zona;
 import com.careconnect.repository.CuidadorRepository;
 import com.careconnect.repository.EspecialidadRepository;
+import com.careconnect.repository.ReseniaRepository;
 import com.careconnect.repository.ZonaRepository;
 import com.careconnect.service.CuidadorService;
 import org.springframework.stereotype.Service;
@@ -23,13 +24,16 @@ public class CuidadorServiceImpl implements CuidadorService {
     private final CuidadorRepository cuidadorRepository;
     private final EspecialidadRepository especialidadRepository;
     private final ZonaRepository zonaRepository;
+    private final ReseniaRepository reseniaRepository;
 
     public CuidadorServiceImpl(CuidadorRepository cuidadorRepository,
                                 EspecialidadRepository especialidadRepository,
-                                ZonaRepository zonaRepository) {
+                                ZonaRepository zonaRepository,
+                                ReseniaRepository reseniaRepository) {
         this.cuidadorRepository = cuidadorRepository;
         this.especialidadRepository = especialidadRepository;
         this.zonaRepository = zonaRepository;
+        this.reseniaRepository = reseniaRepository;
     }
 
     @Override
@@ -110,6 +114,11 @@ public class CuidadorServiceImpl implements CuidadorService {
     }
 
     private CuidadorPerfilResponseDTO toResponseDTO(Cuidador c) {
+        Double promedio = reseniaRepository.calcularPromedioCuidador(c.getId());
+        Long total = reseniaRepository.contarReseniasCuidador(c.getId());
+        double califPromedio = (promedio != null && total != null && total > 0) ? Math.round(promedio * 10.0) / 10.0 : 5.0;
+        long totalCount = total != null ? total : 0L;
+
         return CuidadorPerfilResponseDTO.builder()
                 .id(c.getId())
                 .nombre(c.getNombre())
@@ -122,6 +131,9 @@ public class CuidadorServiceImpl implements CuidadorService {
                 .zonaPrincipal(c.getZonaPrincipal())
                 .precioHora(c.getPrecioHora())
                 .disponible(c.isDisponible())
+                .calificacionPromedio(califPromedio)
+                .totalResenas(totalCount)
+                .totalResenias(totalCount)
                 .especialidades(c.getEspecialidades().stream()
                         .map(Especialidad::getNomEspecialidad)
                         .collect(Collectors.toList()))

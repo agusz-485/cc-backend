@@ -25,4 +25,7 @@ public class EnfermeroPerfilResponseDTO {
     private String zonaPrincipal;
     private BigDecimal precioHora;
     private boolean visible;
+    private Double calificacionPromedio;
+    private Long totalResenas;
+    private Long totalResenias;
 }
