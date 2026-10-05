@@ -1,4 +1,4 @@
-package com.careconnect.service.impl;
+﻿package com.careconnect.service.impl;
 
 import com.careconnect.dto.auth.AuthResponseDTO;
 import com.careconnect.dto.auth.LoginRequestDTO;
@@ -10,6 +10,7 @@ import com.careconnect.repository.UsuarioRepository;
 import com.careconnect.service.JwtService;
 import com.careconnect.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,7 +37,8 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     @Transactional
     public AuthResponseDTO registrar(RegistroUsuarioDTO dto) {
-        if (usuarioRepository.existsByEmail(dto.getEmail())) {
+        String emailTrimmed = dto.getEmail() != null ? dto.getEmail().trim() : "";
+        if (usuarioRepository.existsByEmail(emailTrimmed)) {
             throw new RuntimeException("El email ya se encuentra registrado");
         }
 
@@ -83,7 +85,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuario.setNombre(dto.getNombre());
         usuario.setApellido(dto.getApellido());
         usuario.setTelefono(dto.getTelefono());
-        usuario.setEmail(dto.getEmail());
+        usuario.setEmail(emailTrimmed);
         usuario.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
         usuario.setRol(rol);
 
@@ -112,11 +114,12 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public AuthResponseDTO login(LoginRequestDTO dto) {
-        Usuario usuario = usuarioRepository.findByEmail(dto.getEmail())
-                .orElseThrow(() -> new RuntimeException("Credenciales invalidas"));
+        String emailTrimmed = dto.getEmail() != null ? dto.getEmail().trim() : "";
+        Usuario usuario = usuarioRepository.findByEmail(emailTrimmed)
+                .orElseThrow(() -> new BadCredentialsException("Credenciales incorrectas. Verificá email y contraseña."));
 
         if (!passwordEncoder.matches(dto.getPassword(), usuario.getPasswordHash())) {
-            throw new RuntimeException("Credenciales invalidas");
+            throw new BadCredentialsException("Credenciales incorrectas. Verificá email y contraseña.");
         }
 
         if (usuario.getEstadoUser() == EstadoUsuario.SUSPENDIDO) {
